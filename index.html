@@ -50,14 +50,14 @@
           class="add-form-name"
           placeholder="Введите ваше имя"
         />
-        <textarea
+        <textarea 
           type="textarea"
           class="add-form-text"
           placeholder="Введите ваш коментарий"
           rows="4"
         ></textarea>
         <div class="add-form-row">
-          <button class="add-form-button">Написать</button>
+          <button class="add-form-button" id="btn">Написать</button>
         </div>
       </div>
     </div>
@@ -66,6 +66,48 @@
   <script>
     "use strict";
     // Код писать здесь
-    console.log("It works!");
+    const nameInput = document.querySelector('.add-form-name');
+    const textInput = document.querySelector('.add-form-text');
+    const btn = document.getElementById('btn');
+    const commentsContainer = document.querySelector('.comments') || document.body;
+
+    function checkInputs() {
+    btn.disabled = !(nameInput.value.trim() && textInput.value.trim());
+    }
+
+    btn.addEventListener('click', () => {
+    const date = new Date().toLocaleString().slice(0, -3).replace(',', '');
+    const newComment = document.createElement('div');
+    newComment.classList.add('comment'); 
+
+    newComment.innerHTML = `
+        <div class="comment-header">
+            <div>${nameInput.value}</div>
+            <div>${date}</div>
+        </div>
+        <div class="comment-body">
+            <div class="comment-text">
+                ${textInput.value}
+            </div>
+        </div>
+        <div class="comment-footer">
+            <div class="likes">
+                <span class="likes-counter">0</span>
+                <button class="like-button"></button>
+            </div>
+        </div>
+    `;
+
+    commentsContainer.appendChild(newComment);
+
+    nameInput.value = '';
+    textInput.value = '';
+    checkInputs();
+    });
+
+    nameInput.addEventListener('input', checkInputs);
+    textInput.addEventListener('input', checkInputs);
+
+    checkInputs();
   </script>
 </html>
