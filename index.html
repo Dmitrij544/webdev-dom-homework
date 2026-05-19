@@ -21,7 +21,7 @@
           </div>
           <div class="comment-footer">
             <div class="likes">
-              <span class="likes-counter">3</span>
+              <span class="likes-counter">0</span>
               <button class="like-button"></button>
             </div>
           </div>
@@ -38,8 +38,8 @@
           </div>
           <div class="comment-footer">
             <div class="likes">
-              <span class="likes-counter">75</span>
-              <button class="like-button -active-like"></button>
+              <span class="likes-counter">0</span>
+              <button class="like-button"></button>
             </div>
           </div>
         </li>
@@ -57,7 +57,7 @@
           rows="4"
         ></textarea>
         <div class="add-form-row">
-          <button class="add-form-button" id="btn">Написать</button>
+          <button class="add-form-button">Написать</button>
         </div>
       </div>
     </div>
@@ -65,10 +65,10 @@
 
   <script>
     "use strict";
-    // Код писать здесь
+    // Добавление комментария
     const nameInput = document.querySelector('.add-form-name');
     const textInput = document.querySelector('.add-form-text');
-    const btn = document.getElementById('btn');
+    const btn = document.querySelector('.add-form-button');
     const commentsContainer = document.querySelector('.comments') || document.body;
 
     function checkInputs() {
@@ -109,5 +109,31 @@
     textInput.addEventListener('input', checkInputs);
 
     checkInputs();
+
+    // Добавление лайка
+    commentsContainer.addEventListener('click', (event) => {
+        const likeBtn = event.target.closest('.like-button');
+        if (!likeBtn) return; 
+
+        const likeBlock = likeBtn.closest('.likes');
+        const likeCount = likeBlock.querySelector('.likes-counter');
+
+        const commentData = {
+            likes: parseInt(likeCount.textContent) || 0,
+            isLiked: likeBtn.classList.contains('-active-like')
+        };
+
+        if (!commentData.isLiked) {
+            commentData.likes++;
+            commentData.isLiked = true;
+        } else {
+            commentData.likes--;
+            commentData.isLiked = false;
+        }
+
+        likeBtn.className = `like-button ${commentData.isLiked ? '-active-like' : ''}`;
+
+        likeCount.textContent = commentData.likes;
+    });
   </script>
 </html>
