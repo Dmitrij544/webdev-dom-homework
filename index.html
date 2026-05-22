@@ -135,5 +135,50 @@
 
         likeCount.textContent = commentData.likes;
     });
+    
+    // Добавление ответа на комментарий
+    function escapeHTML(text) {
+    if (!text) return '';
+    return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;'); 
+    }
+
+    commentsContainer.addEventListener('click', (event) => {
+    
+        if (event.target.closest('.like-button')) {
+            event.stopPropagation(); 
+            return; 
+        }
+
+        const commentElement = event.target.closest('.comment');
+    
+        if (commentElement) {
+            const commentHeader = commentElement.querySelector('.comment-header');
+            const textElement = commentElement.querySelector('.comment-text');
+        
+            const authorElement = commentHeader ? commentHeader.querySelector('div:first-child') : null;
+        
+            const rawAuthor = authorElement ? authorElement.textContent : 'Автор';
+            const rawText = textElement ? textElement.textContent : '';
+        
+            const safeAuthor = escapeHTML(rawAuthor.trim());
+            const safeText = escapeHTML(rawText.trim());
+
+            const quoteText = `> ${safeAuthor}: "${safeText}"\n\n`;
+
+            if (textInput) {
+                textInput.value = quoteText;
+                textInput.focus();
+            
+                if (typeof checkInputs === 'function') {
+                    checkInputs();
+                }
+            }
+        }
+    });
   </script>
 </html>
