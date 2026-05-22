@@ -138,13 +138,13 @@
     
     // Добавление ответа на комментарий
     function escapeHTML(text) {
-    if (!text) return '';
-    return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;'); 
+        if (!text) return '';
+        return text
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;'); 
     }
 
     commentsContainer.addEventListener('click', (event) => {
