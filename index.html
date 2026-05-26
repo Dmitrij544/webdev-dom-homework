@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Проект "Комменты"</title>
@@ -50,7 +50,7 @@
           class="add-form-name"
           placeholder="Введите ваше имя"
         />
-        <textarea 
+        <textarea
           type="textarea"
           class="add-form-text"
           placeholder="Введите ваш коментарий"
@@ -61,93 +61,133 @@
         </div>
       </div>
     </div>
-  </body>
+    <script type="module" src="index.js"></script>
 
-  <script>
-    "use strict";
-    // Добавление комментария
-    const nameInput = document.querySelector('.add-form-name');
-    const textInput = document.querySelector('.add-form-text');
-    const btn = document.querySelector('.add-form-button');
-    const commentsContainer = document.querySelector('.comments') || document.body;
+    <!--
+    <script>
+      "use strict";
+      const initialComments = [
+        {
+          name: "Глеб Фокин",
+          date: "12.02.22 12:18",
+          text: "Это первый комментарий",
+          likes: 3,
+          isLiked: false,
+        },
+        {
+          name: "Варвара Н.",
+          date: "13.02.22 19:22",
+          text: "Мне нравится ваша страница!",
+          likes: 75,
+          isLiked: true,
+        },
+      ];
 
-    function checkInputs() {
+      const nameInput = document.querySelector(".add-form-name");
+      const textInput = document.querySelector(".add-form-text");
+      const btn = document.querySelector(".add-form-button");
+      const commentsContainer =
+        document.querySelector(".comments") || document.body;
+
+      function checkInputs() {
         btn.disabled = !(nameInput.value.trim() && textInput.value.trim());
-    }
+      }
 
-    btn.addEventListener('click', () => {
-        const date = new Date().toLocaleString().slice(0, -3).replace(',', '');
-        const newComment = document.createElement('div');
-            newComment.classList.add('comment'); 
+      function createCommentElement(name, text, date, likes, isLiked) {
+        const newComment = document.createElement("div");
+        newComment.classList.add("comment");
 
-            newComment.innerHTML = `
-                <div class="comment-header">
-                    <div>${nameInput.value}</div>
-                    <div>${date}</div>
+        const activeClass = isLiked ? "-active-like" : "";
+
+        newComment.innerHTML = `
+            <div class="comment-header">
+                <div>${name}</div>
+                <div>${date}</div>
+            </div>
+            <div class="comment-body">
+                <div class="comment-text">
+                    ${text}
                 </div>
-                <div class="comment-body">
-                    <div class="comment-text">
-                        ${textInput.value}
-                    </div>
+            </div>
+            <div class="comment-footer">
+                <div class="likes">
+                    <span class="likes-counter">${likes}</span>
+                    <button class="like-button ${activeClass}"></button>
                 </div>
-                <div class="comment-footer">
-                    <div class="likes">
-                        <span class="likes-counter">0</span>
-                        <button class="like-button"></button>
-                    </div>
-                </div>
-            `;
+            </div>
+        `;
+        return newComment;
+      }
 
-            commentsContainer.appendChild(newComment);
+      initialComments.forEach((comment) => {
+        const commentNode = createCommentElement(
+          comment.name,
+          comment.text,
+          comment.date,
+          comment.likes,
+          comment.isLiked
+        );
+        commentsContainer.appendChild(commentNode);
+      });
 
-            nameInput.value = '';
-            textInput.value = '';
-            checkInputs();
-    });
+      btn.addEventListener("click", () => {
+        const date = new Date().toLocaleString().slice(0, -3).replace(",", "");
 
-    nameInput.addEventListener('input', checkInputs);
-    textInput.addEventListener('input', checkInputs);
+        const newComment = createCommentElement(
+          nameInput.value,
+          textInput.value,
+          date,
+          0,
+          false
+        );
 
-    checkInputs();
+        commentsContainer.appendChild(newComment);
 
-    // Добавление лайка
-    commentsContainer.addEventListener('click', (event) => {
-        const likeBtn = event.target.closest('.like-button');
-        if (!likeBtn) return; 
+        nameInput.value = "";
+        textInput.value = "";
+        checkInputs();
+      });
 
-        const likeBlock = likeBtn.closest('.likes');
-        const likeCount = likeBlock.querySelector('.likes-counter');
+      nameInput.addEventListener("input", checkInputs);
+      textInput.addEventListener('input', checkInputs);
+
+      checkInputs();
+
+      commentsContainer.addEventListener("click", (event) => {
+        const likeBtn = event.target.closest(".like-button");
+        if (!likeBtn) return;
+
+        const likeBlock = likeBtn.closest(".likes");
+        const likeCount = likeBlock.querySelector(".likes-counter");
 
         const commentData = {
-            likes: parseInt(likeCount.textContent) || 0,
-            isLiked: likeBtn.classList.contains('-active-like')
+          likes: parseInt(likeCount.textContent) || 0,
+          isLiked: likeBtn.classList.contains("-active-like"),
         };
 
         if (!commentData.isLiked) {
-            commentData.likes++;
-            commentData.isLiked = true;
+          commentData.likes++;
+          commentData.isLiked = true;
         } else {
-            commentData.likes--;
-            commentData.isLiked = false;
+          commentData.likes--;
+          commentData.isLiked = false;
         }
 
-        likeBtn.className = `like-button ${commentData.isLiked ? '-active-like' : ''}`;
-
+        likeBtn.className = `like-button ${commentData.isLiked ? "-active-like" : ""}`;
         likeCount.textContent = commentData.likes;
-    });
-    
-    // Добавление ответа на комментарий
-    function escapeHTML(text) {
-        if (!text) return '';
-        return String(text)
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#39;'); 
-    }
+      });
 
-    function renderComment(authorName, commentText) {
+      function escapeHTML(text) {
+        if (!text) return "";
+        return String(text)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;"); // ИСПРАВЛЕНО: правильная замена кавычки
+      }
+
+      function renderComment(authorName, commentText) {
         const safeAuthor = escapeHTML(authorName.trim());
         const safeText = escapeHTML(commentText.trim());
 
@@ -160,37 +200,42 @@
                 <button class="like-button">❤️</button>
             </div>
         `;
-    }
+      }
 
-    commentsContainer.addEventListener('click', (event) => {
-
-        if (event.target.closest('.like-button')) {
-            event.stopPropagation(); 
-            return; 
+      commentsContainer.addEventListener("click", (event) => {
+        if (event.target.closest(".like-button")) {
+          event.stopPropagation();
+          return;
         }
 
-        const commentElement = event.target.closest('.comment');
+        const commentElement = event.target.closest(".comment");
 
         if (commentElement) {
-            const commentHeader = commentElement.querySelector('.comment-header');
-            const textElement = commentElement.querySelector('.comment-text');
-    
-            const authorElement = commentHeader ? commentHeader.querySelector('div:first-child') : null;
-    
-            const rawAuthor = authorElement ? authorElement.textContent.trim() : 'Автор';
-            const rawText = textElement ? textElement.textContent.trim() : '';
-    
-            const quoteText = `> ${rawAuthor}: "${rawText}"\n\n`;
+          const commentHeader = commentElement.querySelector(".comment-header");
+          const textElement = commentElement.querySelector(".comment-text");
 
-            if (textInput) {
-                textInput.value = quoteText;
-                textInput.focus();
-        
-                if (typeof checkInputs === 'function') {
-                    checkInputs();
-                }
+          const authorElement = commentHeader
+            ? commentHeader.querySelector("div:first-child")
+            : null;
+
+          const rawAuthor = authorElement
+            ? authorElement.textContent.trim()
+            : "Автор";
+          const rawText = textElement ? textElement.textContent.trim() : "";
+
+          const quoteText = `> ${rawAuthor}: "${rawText}"\n\n`;
+
+          if (textInput) {
+            textInput.value = quoteText;
+            textInput.focus();
+
+            if (typeof checkInputs === "function") {
+              checkInputs();
             }
+          }
         }
-    });
-  </script>
+      });
+    </script>
+    -->
+  </body>
 </html>
