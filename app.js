@@ -1,5 +1,7 @@
-import { comments } from "./comments.js";
 import { renderComments } from "./renderComments.js";
+import { getComments, postComment } from "./api.js";
+
+let comments = [];
 
 export function initApp() {
   const nameInput = document.querySelector(".add-form-name");
@@ -14,20 +16,37 @@ export function initApp() {
     }
   }
 
-  if (btn) {
-    btn.addEventListener("click", () => {
-      const date = new Date().toLocaleString().slice(0, -3).replace(",", "");
-      comments.push({
-        name: nameInput.value,
-        text: textInput.value,
-        date: date,
-        likes: 0,
-        isLiked: false,
-      });
+  async function fetchAndRender() {
+    try {
+      comments = await getComments();
       renderComments(comments, commentsContainer, textInput, checkInputs);
-      nameInput.value = "";
-      textInput.value = "";
-      checkInputs();
+    } catch (error) {
+      alert("Не удалось загрузить комментарии. Проверьте соединение.");
+    }
+  }
+
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      if (!nameInput.value.trim() || !textInput.value.trim()) return;
+
+      btn.disabled = true;
+      btn.textContent = "Добавление...";
+
+      try {
+        await postComment(nameInput.value, textInput.value);
+
+        nameInput.value = "";
+        textInput.value = "";
+
+        await fetchAndRender();
+      } catch (error) {
+        alert(
+          "Не удалось отправить комментарий. Пожалуйста, попробуйте позже."
+        );
+      } finally {
+        btn.textContent = "Написать";
+        checkInputs();
+      }
     });
   }
 
@@ -36,6 +55,6 @@ export function initApp() {
     textInput.addEventListener("input", checkInputs);
   }
 
-  renderComments(comments, commentsContainer, textInput, checkInputs);
+  fetchAndRender();
   checkInputs();
 }

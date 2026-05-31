@@ -1,4 +1,3 @@
-import { comments } from "./comments.js";
 import { initlikeListeners, initReplyListeners } from "./initListeners.js";
 import { escapeHTML } from "./utils.js";
 
@@ -11,10 +10,14 @@ function createCommentElement(name, text, date, likes, isLiked, index) {
   const safeName = escapeHTML(name);
   const safeText = escapeHTML(text);
 
+  const formattedDate = date.includes("T")
+    ? new Date(date).toLocaleString().slice(0, -3).replace(",", "")
+    : date;
+
   newComment.innerHTML = `
         <div class="comment-header">
             <div>${safeName}</div>
-            <div>${date}</div>
+            <div>${formattedDate}</div>
         </div>
         <div class="comment-body">
             <div class="comment-text">
@@ -40,17 +43,25 @@ export const renderComments = (
   commentsContainer.innerHTML = "";
 
   commentsArray.forEach((comment, index) => {
+    const currentName = comment.author?.name || comment.name;
+
     const commentNode = createCommentElement(
-      comment.name,
+      currentName,
       comment.text,
       comment.date,
       comment.likes,
-      comment.isLiked,
+      comment.isLiked ?? false,
       index
     );
     commentsContainer.appendChild(commentNode);
   });
 
-  initlikeListeners(renderComments, commentsContainer);
-  initReplyListeners(commentsContainer, textInput, checkInputs);
+  initlikeListeners(
+    renderComments,
+    commentsContainer,
+    textInput,
+    checkInputs,
+    commentsArray
+  );
+  initReplyListeners(commentsContainer, textInput, checkInputs, commentsArray);
 };
