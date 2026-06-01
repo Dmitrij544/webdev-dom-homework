@@ -10,43 +10,67 @@ export function initApp() {
   const commentsContainer =
     document.querySelector(".comments") || document.body;
 
+  const loadingTitle = document.getElementById("loading-title");
+  const addForm = document.getElementById("add-form");
+  const commentAddingTitle = document.getElementById("comment-adding-title");
+
+  commentsContainer.innerHTML = "";
+
   function checkInputs() {
     if (btn && nameInput && textInput) {
       btn.disabled = !(nameInput.value.trim() && textInput.value.trim());
     }
   }
 
-  async function fetchAndRender() {
-    try {
-      comments = await getComments();
-      renderComments(comments, commentsContainer, textInput, checkInputs);
-    } catch (error) {
-      alert("Не удалось загрузить комментарии. Проверьте соединение.");
+  function fetchAndRender(isInitialLoad = false) {
+    if (isInitialLoad && loadingTitle) {
+      loadingTitle.classList.remove("hidden");
     }
+
+    return getComments()
+      .then((fetchedComments) => {
+        comments = fetchedComments;
+
+        commentsContainer.classList.remove("hidden");
+        renderComments(comments, commentsContainer, textInput, checkInputs);
+      })
+      .catch((error) => {
+        alert("Не удалось загрузить комментарии. Проверьте соединение.");
+      })
+      .then(() => {
+        if (isInitialLoad && loadingTitle) {
+          loadingTitle.classList.add("hidden");
+        }
+      });
   }
 
   if (btn) {
-    btn.addEventListener("click", async () => {
-      if (!nameInput.value.trim() || !textInput.value.trim()) return;
+    btn.addEventListener("click", () => {
+      const currentName = nameInput.value.trim();
+      const currentText = textInput.value.trim();
 
-      btn.disabled = true;
-      btn.textContent = "Добавление...";
+      if (!currentName || !currentText) return;
+      if (addForm) addForm.classList.add("hidden");
+      if (commentAddingTitle) commentAddingTitle.classList.remove("hidden");
 
-      try {
-        await postComment(nameInput.value, textInput.value);
+      postComment(currentName, currentText)
+        .then(() => {
+          nameInput.value = "";
+          textInput.value = "";
 
-        nameInput.value = "";
-        textInput.value = "";
+          return fetchAndRender(false);
+        })
+        .catch((error) => {
+          alert(
+            "Не удалось отправить комментарий. Пожалуйста, попробуйте позже."
+          );
+        })
+        .then(() => {
+          if (addForm) addForm.classList.remove("hidden");
+          if (commentAddingTitle) commentAddingTitle.classList.add("hidden");
 
-        await fetchAndRender();
-      } catch (error) {
-        alert(
-          "Не удалось отправить комментарий. Пожалуйста, попробуйте позже."
-        );
-      } finally {
-        btn.textContent = "Написать";
-        checkInputs();
-      }
+          checkInputs();
+        });
     });
   }
 
@@ -55,6 +79,6 @@ export function initApp() {
     textInput.addEventListener("input", checkInputs);
   }
 
-  fetchAndRender();
+  fetchAndRender(true);
   checkInputs();
 }

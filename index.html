@@ -8,7 +8,10 @@
 
   <body>
     <div class="container">
-      <ul class="comments">
+      <div class="loading-title" id="loading-title">
+        Пожалуйста подождите, комментарии загружаются...
+      </div>
+      <ul class="comments hidden" id="comments-list">
         <li class="comment">
           <div class="comment-header">
             <div>Глеб Фокин</div>
@@ -44,7 +47,19 @@
           </div>
         </li>
       </ul>
-      <div class="add-form">
+      <div
+        class="comment-adding-title hidden"
+        id="comment-adding-title"
+        style="
+          color: #ffffff;
+          font-size: 18px;
+          margin-top: 20px;
+          margin-bottom: 20px;
+        "
+      >
+        Комментарий добавляется...
+      </div>
+      <div class="add-form" id="add-form">
         <input
           type="text"
           class="add-form-name"
