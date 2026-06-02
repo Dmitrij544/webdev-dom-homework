@@ -30,12 +30,19 @@ export function initApp() {
     return getComments()
       .then((fetchedComments) => {
         comments = fetchedComments;
-
         commentsContainer.classList.remove("hidden");
         renderComments(comments, commentsContainer, textInput, checkInputs);
       })
       .catch((error) => {
-        alert("Не удалось загрузить комментарии. Проверьте соединение.");
+        if (error.status === 500 || error.message.includes("500")) {
+          alert("Сервер сломался, попробуй позже");
+        } 
+        else if (error.message === "Failed to fetch" || !navigator.onLine) {
+          alert("Кажется, у вас сломался интернет, попробуйте позже");
+        } 
+        else {
+          alert("Не удалось загрузить комментарии. Проверьте соединение.");
+        }
       })
       .then(() => {
         if (isInitialLoad && loadingTitle) {
@@ -49,7 +56,11 @@ export function initApp() {
       const currentName = nameInput.value.trim();
       const currentText = textInput.value.trim();
 
-      if (!currentName || !currentText) return;
+      if (!currentName || !currentText) {
+        alert("Имя и комментарий должны быть заполнены");
+        return; 
+      }
+
       if (addForm) addForm.classList.add("hidden");
       if (commentAddingTitle) commentAddingTitle.classList.remove("hidden");
 
@@ -57,18 +68,22 @@ export function initApp() {
         .then(() => {
           nameInput.value = "";
           textInput.value = "";
-
           return fetchAndRender(false);
         })
         .catch((error) => {
-          alert(
-            "Не удалось отправить комментарий. Пожалуйста, попробуйте позже."
-          );
+          if (error.message === "500") {
+            alert("Сервер сломался, попробуй позже");
+          } else if (error.message === "400") {
+            alert("Имя и комментарий должны быть не короче 3 символов");
+          } else if (error.message === "Failed to fetch" || !navigator.onLine) {
+            alert("Кажется, у вас сломался интернет, попробуйте позже");
+          } else {
+            alert("Не удалось отправить комментарий. Пожалуйста, попробуйте позже.");
+          }
         })
         .then(() => {
           if (addForm) addForm.classList.remove("hidden");
           if (commentAddingTitle) commentAddingTitle.classList.add("hidden");
-
           checkInputs();
         });
     });

@@ -67,3 +67,27 @@ export const initReplyListeners = (
     }
   });
 };
+
+export const initValidationListeners = (nameInput, textInput, submitButton) => {
+  if (!nameInput || !textInput || !submitButton) return;
+
+  const checkInputs = () => {
+    const isNameValid = nameInput.value.trim().length >= 2;
+    const isTextValid = textInput.value.trim().length >= 10;
+
+    if (isNameValid && isTextValid) {
+      submitButton.disabled = false;
+      submitButton.classList.remove("disabled-button-class"); 
+    } else {
+      submitButton.disabled = true;
+      submitButton.classList.add("disabled-button-class");
+    }
+  };
+
+  nameInput.addEventListener("input", checkInputs);
+  textInput.addEventListener("input", checkInputs);
+
+  checkInputs();
+
+  return checkInputs;
+};
