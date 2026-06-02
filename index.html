@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Проект "Комменты"</title>
@@ -8,7 +8,10 @@
 
   <body>
     <div class="container">
-      <ul class="comments">
+      <div class="loading-title" id="loading-title">
+        Пожалуйста подождите, комментарии загружаются...
+      </div>
+      <ul class="comments hidden" id="comments-list">
         <li class="comment">
           <div class="comment-header">
             <div>Глеб Фокин</div>
@@ -44,13 +47,25 @@
           </div>
         </li>
       </ul>
-      <div class="add-form">
+      <div
+        class="comment-adding-title hidden"
+        id="comment-adding-title"
+        style="
+          color: #ffffff;
+          font-size: 18px;
+          margin-top: 20px;
+          margin-bottom: 20px;
+        "
+      >
+        Комментарий добавляется...
+      </div>
+      <div class="add-form" id="add-form">
         <input
           type="text"
           class="add-form-name"
           placeholder="Введите ваше имя"
         />
-        <textarea 
+        <textarea
           type="textarea"
           class="add-form-text"
           placeholder="Введите ваш коментарий"
@@ -61,79 +76,6 @@
         </div>
       </div>
     </div>
+    <script type="module" src="index.js"></script>
   </body>
-
-  <script>
-    "use strict";
-    // Добавление комментария
-    const nameInput = document.querySelector('.add-form-name');
-    const textInput = document.querySelector('.add-form-text');
-    const btn = document.querySelector('.add-form-button');
-    const commentsContainer = document.querySelector('.comments') || document.body;
-
-    function checkInputs() {
-        btn.disabled = !(nameInput.value.trim() && textInput.value.trim());
-    }
-
-    btn.addEventListener('click', () => {
-        const date = new Date().toLocaleString().slice(0, -3).replace(',', '');
-        const newComment = document.createElement('div');
-            newComment.classList.add('comment'); 
-
-            newComment.innerHTML = `
-                <div class="comment-header">
-                    <div>${nameInput.value}</div>
-                    <div>${date}</div>
-                </div>
-                <div class="comment-body">
-                    <div class="comment-text">
-                        ${textInput.value}
-                    </div>
-                </div>
-                <div class="comment-footer">
-                    <div class="likes">
-                        <span class="likes-counter">0</span>
-                        <button class="like-button"></button>
-                    </div>
-                </div>
-            `;
-
-            commentsContainer.appendChild(newComment);
-
-            nameInput.value = '';
-            textInput.value = '';
-            checkInputs();
-    });
-
-    nameInput.addEventListener('input', checkInputs);
-    textInput.addEventListener('input', checkInputs);
-
-    checkInputs();
-
-    // Добавление лайка
-    commentsContainer.addEventListener('click', (event) => {
-        const likeBtn = event.target.closest('.like-button');
-        if (!likeBtn) return; 
-
-        const likeBlock = likeBtn.closest('.likes');
-        const likeCount = likeBlock.querySelector('.likes-counter');
-
-        const commentData = {
-            likes: parseInt(likeCount.textContent) || 0,
-            isLiked: likeBtn.classList.contains('-active-like')
-        };
-
-        if (!commentData.isLiked) {
-            commentData.likes++;
-            commentData.isLiked = true;
-        } else {
-            commentData.likes--;
-            commentData.isLiked = false;
-        }
-
-        likeBtn.className = `like-button ${commentData.isLiked ? '-active-like' : ''}`;
-
-        likeCount.textContent = commentData.likes;
-    });
-  </script>
 </html>
