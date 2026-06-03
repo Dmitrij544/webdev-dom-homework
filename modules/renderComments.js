@@ -34,12 +34,7 @@ function createCommentElement(name, text, date, likes, isLiked, index) {
   return newComment;
 }
 
-export const renderComments = (
-  commentsArray,
-  commentsContainer,
-  textInput,
-  checkInputs
-) => {
+export const renderComments = (commentsArray, commentsContainer) => {
   commentsContainer.innerHTML = "";
 
   commentsArray.forEach((comment, index) => {
@@ -56,12 +51,9 @@ export const renderComments = (
     commentsContainer.appendChild(commentNode);
   });
 
-  initlikeListeners(
-    renderComments,
-    commentsContainer,
-    textInput,
-    checkInputs,
-    commentsArray
-  );
-  initReplyListeners(commentsContainer, textInput, checkInputs, commentsArray);
+  initlikeListeners(renderComments, commentsContainer, commentsArray);
+  const textInput = document.getElementById("comment-textarea");
+  if (textInput) {
+    initReplyListeners(commentsContainer, textInput, commentsArray);
+  }
 };

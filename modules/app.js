@@ -1,28 +1,26 @@
 import { renderComments } from "./renderComments.js";
-import { getComments, postComment } from "./api.js";
+import { getComments, postComment, setToken } from "./api.js";
+import { renderLogin } from "./renderLogin.js";
+import { renderRegistration } from "./renderRegistration.js";
 
 let comments = [];
+let userName = null; 
+let isAuthorized = false; 
 
 export function initApp() {
-  const nameInput = document.querySelector(".add-form-name");
-  const textInput = document.querySelector(".add-form-text");
-  const btn = document.querySelector(".add-form-button");
-  const commentsContainer =
-    document.querySelector(".comments") || document.body;
-
-  const loadingTitle = document.getElementById("loading-title");
-  const addForm = document.getElementById("add-form");
-  const commentAddingTitle = document.getElementById("comment-adding-title");
-
-  commentsContainer.innerHTML = "";
-
-  function checkInputs() {
-    if (btn && nameInput && textInput) {
-      btn.disabled = !(nameInput.value.trim() && textInput.value.trim());
-    }
-  }
+  const appContainer = document.getElementById("app") || document.body;
 
   function fetchAndRender(isInitialLoad = false) {
+    appContainer.innerHTML = `
+      <div id="loading-title" class="loading-title hidden">Пожалуйста подождите, загружаю комментарии...</div>
+      <ul class="comments comments-list hidden"></ul>
+      <div id="action-block"></div>
+    `;
+
+    const loadingTitle = document.getElementById("loading-title");
+    const commentsContainer = document.querySelector(".comments");
+    const actionBlock = document.getElementById("action-block");
+
     if (isInitialLoad && loadingTitle) {
       loadingTitle.classList.remove("hidden");
     }
@@ -31,16 +29,16 @@ export function initApp() {
       .then((fetchedComments) => {
         comments = fetchedComments;
         commentsContainer.classList.remove("hidden");
-        renderComments(comments, commentsContainer, textInput, checkInputs);
+        
+        renderComments(comments, commentsContainer);
+        renderActionBlock(actionBlock);
       })
       .catch((error) => {
         if (error.status === 500 || error.message.includes("500")) {
           alert("Сервер сломался, попробуй позже");
-        } 
-        else if (error.message === "Failed to fetch" || !navigator.onLine) {
+        } else if (error.message === "Failed to fetch" || !navigator.onLine) {
           alert("Кажется, у вас сломался интернет, попробуйте позже");
-        } 
-        else {
+        } else {
           alert("Не удалось загрузить комментарии. Проверьте соединение.");
         }
       })
@@ -51,49 +49,110 @@ export function initApp() {
       });
   }
 
-  if (btn) {
-    btn.addEventListener("click", () => {
-      const currentName = nameInput.value.trim();
-      const currentText = textInput.value.trim();
+  function renderActionBlock(container) {
+    if (!isAuthorized) {
+      container.innerHTML = `
+        <p class="auth-notice">
+          Чтобы добавить комментарий, <a href="#" id="go-to-login">войдите</a>
+        </p>
+      `;
 
-      if (!currentName || !currentText) {
-        alert("Имя и комментарий должны быть заполнены");
-        return; 
+      document.getElementById("go-to-login").addEventListener("click", (e) => {
+        e.preventDefault();
+        goToLoginScreen();
+      });
+    } else {
+      container.innerHTML = `
+        <div id="add-form" class="add-form">
+          <input type="text" class="add-form-name" value="${userName}" readonly />
+          <textarea id="comment-textarea" class="add-form-text" placeholder="Введите ваш комментарий" rows="4"></textarea>
+          <div id="comment-adding-title" class="loading-title hidden">Комментарий добавляется...</div>
+          <button id="add-button" class="add-form-button" disabled>Написать</button>
+        </div>
+      `;
+
+      const textInput = document.getElementById("comment-textarea");
+      const btn = document.getElementById("add-button");
+      const commentAddingTitle = document.getElementById("comment-adding-title");
+
+      function checkInputs() {
+        btn.disabled = !textInput.value.trim();
       }
 
-      if (addForm) addForm.classList.add("hidden");
-      if (commentAddingTitle) commentAddingTitle.classList.remove("hidden");
+      textInput.addEventListener("input", checkInputs);
 
-      postComment(currentName, currentText)
-        .then(() => {
-          nameInput.value = "";
-          textInput.value = "";
-          return fetchAndRender(false);
-        })
-        .catch((error) => {
-          if (error.message === "500") {
-            alert("Сервер сломался, попробуй позже");
-          } else if (error.message === "400") {
-            alert("Имя и комментарий должны быть не короче 3 символов");
-          } else if (error.message === "Failed to fetch" || !navigator.onLine) {
-            alert("Кажется, у вас сломался интернет, попробуйте позже");
-          } else {
-            alert("Не удалось отправить комментарий. Пожалуйста, попробуйте позже.");
-          }
-        })
-        .then(() => {
-          if (addForm) addForm.classList.remove("hidden");
-          if (commentAddingTitle) commentAddingTitle.classList.add("hidden");
-          checkInputs();
-        });
+      btn.addEventListener("click", () => {
+        const currentText = textInput.value.trim();
+
+        if (!currentText) {
+          alert("Комментарий должен быть заполнен");
+          return;
+        }
+
+        textInput.classList.add("hidden");
+        btn.classList.add("hidden");
+        if (commentAddingTitle) commentAddingTitle.classList.remove("hidden");
+
+        postComment(currentText)
+          .then(() => {
+            textInput.value = "";
+            return fetchAndRender(false);
+          })
+          .catch((error) => {
+            if (error.message === "500") {
+              alert("Сервер сломался, попробуй позже");
+            } else if (error.message === "400") {
+              alert("Комментарий должен быть не короче 3 символов");
+            } else if (error.message === "Failed to fetch" || !navigator.onLine) {
+              alert("Кажется, у вас сломался интернет, попробуйте позже");
+            } else {
+              alert("Не удалось отправить комментарий. Пожалуйста, попробуйте позже.");
+            }
+            
+            textInput.classList.remove("hidden");
+            btn.classList.remove("hidden");
+            if (commentAddingTitle) commentAddingTitle.classList.add("hidden");
+            checkInputs();
+          });
+      });
+    }
+  }
+
+  function goToLoginScreen() {
+    renderLogin({
+      appElement: appContainer,
+      onAuthSuccess: (userData) => {
+        setToken(userData.token); 
+        userName = userData.name; 
+        isAuthorized = true;
+        fetchAndRender(false);
+      },
+      onGoToRegistration: () => {
+        goToRegistrationScreen();
+      },
+      onGoToComments: () => {
+        fetchAndRender(false);
+      },
     });
   }
 
-  if (nameInput && textInput) {
-    nameInput.addEventListener("input", checkInputs);
-    textInput.addEventListener("input", checkInputs);
+  function goToRegistrationScreen() {
+    renderRegistration({
+      appElement: appContainer,
+      onAuthSuccess: (userData) => {
+        setToken(userData.token); 
+        userName = userData.name;
+        isAuthorized = true;
+        fetchAndRender(false);
+      },
+      onGoToLogin: () => {
+        goToLoginScreen();
+      },
+      onGoToComments: () => {
+        fetchAndRender(false);
+      },
+    });
   }
 
   fetchAndRender(true);
-  checkInputs();
 }
