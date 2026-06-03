@@ -5,6 +5,11 @@ export function getComments() {
     method: "GET",
   })
     .then((response) => {
+      if (response.status === 500) {
+        const error = new Error("500");
+        error.status = 500;
+        throw error;
+      }
       if (!response.ok) {
         throw new Error("Ошибка при получении комментариев");
       }
@@ -15,14 +20,25 @@ export function getComments() {
     });
 }
 
-export function postComment(authorName, commentText) {
+export function postComment(name, text) { 
   return fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({
-      name: authorName,
-      text: commentText,
+      name,
+      text,
+      forceError: true, 
     }),
   }).then((response) => {
+    if (response.status === 500) {
+      const error = new Error("500");
+      error.status = 500;
+      throw error;
+    }
+    if (response.status === 400) {
+      const error = new Error("400");
+      error.status = 400;
+      throw error;
+    }
     if (!response.ok) {
       throw new Error("Ошибка при отправке комментария");
     }
